@@ -1,6 +1,7 @@
 <?php
-
 namespace ActiveRecord;
+
+require 'active_support/inflector.php';
 
 class Base {
   protected static $database;
@@ -20,7 +21,7 @@ class Base {
   }
     
   protected static function table_name() {
-    return isset(static::$table_name) ?: strtolower(static::$class) . 's';
+    return isset(static::$table_name) ?: ActiveSupport::Inflector::pluralize(static::$class);
   }
   
   protected static function primary_key_field() {
@@ -82,13 +83,13 @@ class Base {
       $sql_fields .= $key . ' = ' . $value . ', ';
     }
     $sql_fields = substr($sql_fields, 0, strlen($sql_fields) - 2);
-    if(!isset($this->row[self::primary_key_field()])) {
+    if(!isset($this->row[static::primary_key_field()])) {
       throw new Exception("Primary key not set for row, cannot save.");
     }
-    $primary_key_value = $this->row[self::primary_key_field()];
+    $primary_key_value = $this->row[static::primary_key_field()];
     
-    $sql = 'UPDATE ' . self::table_name() . ' SET ' . $sql_fields . 
-      ' WHERE ' . self::primary_key_field() . ' = ' . $primary_key_value;
+    $sql = 'UPDATE ' . static::table_name() . ' SET ' . $sql_fields . 
+      ' WHERE ' . static::primary_key_field() . ' = ' . $primary_key_value;
       
     return $this->database()->exec($sql); 
   }
@@ -111,22 +112,27 @@ class Base {
   
   protected function association_exists($association_name) {
    $associations = $this->associations();
-   return isset($associations['has_many'][$association_name]);
+   return 
+     isset($associations['has_many'][$association_name]) ||
+     in_array($association_name, $associations['has_many']);
   }
   
   protected function association_foreign_key($association_name) {
     $associations = $this->associations();
-    return $associations['has_many'][$association_name]['foreign_key_field'];
+    return $associations['has_many'][$association_name]['foreign_key_field'] 
+      ?: strtolower(static::$class) . '_id';
   }
   
   protected function association_table_name($association_name) {
     $associations = $this->associations();
-    return $associations['has_many'][$association_name]['table_name'];
+    return $associations['has_many'][$association_name]['table_name']
+      ?: $association_name;
   }
   
   protected function association_model($association_name) {
     $associations = $this->associations();
-    return $associations['has_many'][$association_name]['model'];
+    return $associations['has_many'][$association_name]['model'] 
+      ?: ucwords(ActiveSupport::Inflector::singularize($association_name));
   }
   
   protected function association_find($association_name) {

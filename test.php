@@ -10,5 +10,9 @@ ActiveRecord::Base::establish_connection(array(
   'password' => 'root'
 ));
 
-$user = User::find_all();
-print_r($user[0]->photos());
+$users = User::find_all();
+$user = $users[0];
+$user->user_name_set("Love");
+$user->save();
+print_r($user->photos());
+print_r($user);

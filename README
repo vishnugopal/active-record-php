@@ -1,0 +1,38 @@
+This is a simple ActiveRecord implementation for PHP 5.3.
+
+
+Depends on:
+
+* PECL PDO
+* MySQL 5+
+
+Modify test.php to suite your local PHP install. The sample DB dump is provided as test.sql.
+
+Expected output of test.php:
+
+Array
+(
+    [0] => Photo Object
+        (
+            [row:protected] => Array
+                (
+                    [id] => 1
+                    [user_id] => 1
+                )
+
+        )
+
+)
+User Object
+(
+    [row:protected] => Array
+        (
+            [id] => 1
+            [user_name] => Love
+        )
+
+)
+
+
+Changes:
+2010-10-29: Updated to work with PHP 5.3.2

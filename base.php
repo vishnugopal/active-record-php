@@ -10,18 +10,18 @@ class Base {
   protected static $associations = array();
   
   public static function establish_connection($db_settings_name) {
-    $obj_db = new ::PDO( 
+    $obj_db = new \PDO( 
       'mysql:host=' . $db_settings_name['host'] .
       ';dbname=' . $db_settings_name['database'],
       $db_settings_name['username'],
       $db_settings_name['password']
       );
-    $obj_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $obj_db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
     static::$database = $obj_db; 
   }
     
   protected static function table_name() {
-    return isset(static::$table_name) ?: ActiveSupport::Inflector::pluralize(static::$class);
+    return isset(static::$table_name) ?: \ActiveSupport\Inflector::pluralize(static::$class);
   }
   
   protected static function primary_key_field() {
@@ -44,7 +44,7 @@ class Base {
     $statement = self::database()->prepare($sql);
     $statement->execute();
     
-    return self::to_objects($statement->fetchAll(PDO::FETCH_ASSOC));
+    return self::to_objects($statement->fetchAll(\PDO::FETCH_ASSOC));
   }
   
   private static function to_objects($result_set_array) {
@@ -74,7 +74,7 @@ class Base {
   
   public function save() {    
     if(!isset($this->row) || 0 == count($this->row)) {
-      throw new Exception("Can't save empty record.");
+      throw new \Exception("Can't save empty record.");
     }
     
     $sql_fields = '';
@@ -84,7 +84,7 @@ class Base {
     }
     $sql_fields = substr($sql_fields, 0, strlen($sql_fields) - 2);
     if(!isset($this->row[static::primary_key_field()])) {
-      throw new Exception("Primary key not set for row, cannot save.");
+      throw new \Exception("Primary key not set for row, cannot save.");
     }
     $primary_key_value = $this->row[static::primary_key_field()];
     
@@ -99,14 +99,14 @@ class Base {
       return $this->row[$method];
     } elseif("_set" == substr($method, -4)) {
       if((1 != count($arguments)) || !is_scalar($arguments[0])) {
-        throw new Exception("Must have one (and just one) scalar value to set.");
+        throw new \Exception("Must have one (and just one) scalar value to set.");
       }
       $property = substr($method, 0, strlen($method) - 4);
       $this->row[$property] = $arguments[0];
     } elseif($this->association_exists($method)) {
       return $this->association_find($method);
     } else {
-      throw new Exception("Property not found in record.");
+      throw new \Exception("Property not found in record.");
     }
   }
   
@@ -119,20 +119,23 @@ class Base {
   
   protected function association_foreign_key($association_name) {
     $associations = $this->associations();
-    return $associations['has_many'][$association_name]['foreign_key_field'] 
-      ?: strtolower(static::$class) . '_id';
+    return isset($associations['has_many'][$association_name]['foreign_key_field'])
+      ? $associations['has_many'][$association_name]['foreign_key_field']
+	  : strtolower(static::$class) . '_id';
   }
   
   protected function association_table_name($association_name) {
     $associations = $this->associations();
-    return $associations['has_many'][$association_name]['table_name']
-      ?: $association_name;
+    return isset($associations['has_many'][$association_name]['table_name'])
+      ? $associations['has_many'][$association_name]['table_name']
+ 	  : $association_name;
   }
   
   protected function association_model($association_name) {
     $associations = $this->associations();
-    return $associations['has_many'][$association_name]['model'] 
-      ?: ucwords(ActiveSupport::Inflector::singularize($association_name));
+    return isset($associations['has_many'][$association_name]['model'])
+      ? $associations['has_many'][$association_name]['model']
+	  : ucwords(\ActiveSupport\Inflector::singularize($association_name));
   }
   
   protected function association_find($association_name) {

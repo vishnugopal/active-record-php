@@ -3,11 +3,11 @@
 require_once 'user.php';
 require_once 'photo.php';
 
-ActiveRecord::Base::establish_connection(array(
-  'host' => 'localhost',
+ActiveRecord\Base::establish_connection(array(
+  'host' => '127.0.0.1',
   'database' => 'test',
   'username' => 'root',
-  'password' => 'root'
+  'password' => ''
 ));
 
 $users = User::find_all();

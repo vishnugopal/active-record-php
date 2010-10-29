@@ -8,7 +8,9 @@ class Base {
   protected static $table;
   protected static $primary_key_field = 'id';
   protected static $associations = array();
-  
+  protected $association_key;
+
+
   public static function establish_connection($db_settings_name) {
     $obj_db = new \PDO( 
       'mysql:host=' . $db_settings_name['host'] .
@@ -40,7 +42,7 @@ class Base {
     $sql = 'SELECT * from ' . self::table_name() .  
       (isset($options['conditions'])  ? ' WHERE ' . $options['conditions']  : '') . 
       (isset($options['limit'])       ? ' LIMIT ' . $options['limit']       : '') . ';';
-    
+
     $statement = self::database()->prepare($sql);
     $statement->execute();
     
@@ -102,7 +104,22 @@ class Base {
         throw new \Exception("Must have one (and just one) scalar value to set.");
       }
       $property = substr($method, 0, strlen($method) - 4);
-      $this->row[$property] = $arguments[0];
+      if($this->columnExist($property)){
+        $this->row[$property] = $arguments[0];
+      }  else {
+          throw new \Exception("The method is undefined");
+      }
+    } elseif("_get" == substr($method, -4)) {
+      if(0 != count($arguments) ) {
+        throw new \Exception("This method dosn't take arguments");
+      }
+      $property = substr($method, 0, strlen($method) - 4);
+      if($this->columnExist($property)){
+        return $this->row[$property];
+      }  else {
+          throw new \Exception("The method is undefined");
+      }
+      
     } elseif($this->association_exists($method)) {
       return $this->association_find($method);
     } else {
@@ -113,40 +130,43 @@ class Base {
   protected function association_exists($association_name) {
    $associations = $this->associations();
    return 
-     isset($associations['has_many'][$association_name]) ||
-     in_array($association_name, $associations['has_many']);
+     isset($associations[$this->association_key][$association_name]) ||
+     in_array($association_name, $associations[$this->association_key]);
   }
   
   protected function association_foreign_key($association_name) {
     $associations = $this->associations();
-    return isset($associations['has_many'][$association_name]['foreign_key_field'])
-      ? $associations['has_many'][$association_name]['foreign_key_field']
+    return isset($associations[$this->association_key][$association_name]['foreign_key_field'])
+      ? $associations[$this->association_key][$association_name]['foreign_key_field']
 	  : strtolower(static::$class) . '_id';
   }
   
   protected function association_table_name($association_name) {
     $associations = $this->associations();
-    return isset($associations['has_many'][$association_name]['table_name'])
-      ? $associations['has_many'][$association_name]['table_name']
+    return isset($associations[$this->association_key][$association_name]['table_name'])
+      ? $associations[$this->association_key][$association_name]['table_name']
  	  : $association_name;
   }
   
   protected function association_model($association_name) {
     $associations = $this->associations();
-    return isset($associations['has_many'][$association_name]['model'])
-      ? $associations['has_many'][$association_name]['model']
+    return isset($associations[$this->association_key][$association_name]['model'])
+      ? $associations[$this->association_key][$association_name]['model']
 	  : ucwords(\ActiveSupport\Inflector::singularize($association_name));
   }
-  
+
   protected function association_find($association_name) {
     $primary_key_field = static::primary_key_field();
     $primary_key_value = static::database()->quote($this->$primary_key_field());
     $conditions = $this->association_foreign_key($association_name) . ' = ' . $primary_key_value;
     $association_model = $this->association_model($association_name);
-    $find_array = call_user_func("$association_model::find_all", 
+    $find_array = call_user_func("$association_model::find_all",
       array('conditions' => $conditions)
     );
     return $find_array;
   }
-  
+  protected function columnExist($columnName){
+      return (isset ($this->row[$columnName]));
+  }
+
 }

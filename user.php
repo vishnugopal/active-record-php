@@ -10,5 +10,8 @@ class User extends ActiveRecord\Base {
       'photos'
     )
   );
-};
+  function  __construct() {
+      $this->association_key = 'has_many';
+    }
 
+};

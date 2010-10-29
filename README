@@ -10,26 +10,31 @@ Depends on:
 Modify test.php to suite your local PHP install. The sample DB dump is provided as test.sql.
 
 Expected output of test.php:
+Name:-LovesArray
+(
+    [0] => User Object
+        (
+            [association_key:protected] => has_many
+            [row:protected] => Array
+                (
+                    [id] => 1
+                    [user_name] => Loves
+                )
 
+        )
+
+)
 Array
 (
     [0] => Photo Object
         (
+            [association_key:protected] => belongs_to
             [row:protected] => Array
                 (
                     [id] => 1
                     [user_id] => 1
                 )
 
-        )
-
-)
-User Object
-(
-    [row:protected] => Array
-        (
-            [id] => 1
-            [user_name] => Love
         )
 
 )

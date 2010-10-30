@@ -8,6 +8,10 @@ class Base {
   protected static $table;
   protected static $primary_key_field = 'id';
   protected static $associations = array();
+  protected static $association_types = array(
+          'has_many',
+          'belongs_to'
+      );
   protected $association_key;
 
 
@@ -33,7 +37,12 @@ class Base {
   protected static function associations() {
     return static::$associations;
   }
-  
+
+  protected static function associationsType() {
+      return static::$association_types;
+  }
+
+
   protected static function database() {
     return static::$database;
   }
@@ -67,7 +76,7 @@ class Base {
   protected $row;
   
   public function __construct() {
-    
+      
   }
   
   public function from_array($result_set) {
@@ -129,9 +138,17 @@ class Base {
   
   protected function association_exists($association_name) {
    $associations = $this->associations();
-   return 
-     isset($associations[$this->association_key][$association_name]) ||
-     in_array($association_name, $associations[$this->association_key]);
+   foreach ($this->associationsType() as $association) {
+     if(isset($associations[$association])){
+         if(isset($associations[$association][$association_name]) ||
+                 in_array($association_name, $associations[$association])){
+            $this->association_key = $association;
+               return TRUE;
+         }
+     }
+   }
+   return FALSE;
+
   }
   
   protected function association_foreign_key($association_name) {
@@ -165,6 +182,8 @@ class Base {
     );
     return $find_array;
   }
+
+
   protected function columnExist($columnName){
       return (isset ($this->row[$columnName]));
   }

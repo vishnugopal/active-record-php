@@ -60,8 +60,27 @@ VALUES
 UNLOCK TABLES;
 
 
+DROP TABLE IF EXISTS `tags`;
 
+CREATE TABLE `tags`
+(`id` INT(11) NOT NULL AUTO_INCREMENT ,
+ `tag` VARCHAR(255),
+ `photo_id` INT(11),
+Primary Key (id),
+Unique Key (`tag`,`photo_id`),
+Foreign Key (photo_id) references photos(id)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
+LOCK TABLES `tags` WRITE;
+
+INSERT INTO `tags` (`tag`,`photo_id`)
+VALUES
+        ('tag1',1),
+        ('tag11',1),
+        ('tag111',1),
+        ('tag2',2);
+
+UNLOCK TABLES;
 
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

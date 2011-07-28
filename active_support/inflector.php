@@ -4,11 +4,15 @@ namespace ActiveSupport;
 class Inflector {
   
   public static function singularize($value) {
-    return strtolower(substr($value, 0, strlen($value) - 1));
+    $value = strtolower(substr($value, 0, strlen($value) - 1));
+    $value = preg_replace("/ie$/", "y", $value);
+    return $value;
   }
   
   public static function pluralize($value) {
-    return strtolower($value . 's');
+     $value = preg_replace("/y$/", "ie", $value);
+     $value = strtolower($value . 's');
+     return $value;
   }
   
 }
